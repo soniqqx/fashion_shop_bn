@@ -1,0 +1,241 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  username      String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  isActive Boolean @default(true) @map("is_active")
+  addresses Address[]
+  orders    Order[]
+  orderLogs  OrderStatusLog[] 
+  cart      Cart?
+  transaction  InventoryTransaction[]
+
+  @@map("user")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId   String   @map("user_id")    
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recepientName  String
+  phone      String
+  addressLine      String
+  distrinct   String
+  province    String
+  postalCode String
+  isDefault  Boolean @map("is_default")
+  isActive Boolean @default(true)     @map("is_active")
+  createdAt DateTime @default(now())  @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")   
+
+  @@map("address")
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  sku         String      @unique   /* รหัสสินค้าสต็อก */
+  description String?
+  price       Decimal     @db.Decimal(10, 2)
+  unit        String
+  imageUrl    String?     @map("image_url")
+  categoryId  String      @map("category_id")
+  category    Category    @relation(fields: [categoryId], references: [id])
+  isActive Boolean @default(true)     @map("is_active")
+  createdAt DateTime @default(now())  @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")  
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  inventory   Inventory?
+
+  @@map("product")
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String    
+  slug     String    @unique
+  isActive Boolean @default(true)     @map("is_active")
+  createdAt DateTime @default(now())  @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")   
+  products Product[]
+
+  @@map("category")
+}
+
+// 3. ระบบตะกร้าสินค้า (Cart & Cart Items)
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique    @map("user_id")
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  updatedAt DateTime @updatedAt       @map("updated_at")  
+
+  @@map("cart")
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String   @map("cart_id")
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String   @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())  @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")    
+
+  @@unique([cartId, productId]) // ป้องกันไม่ให้สินค้าซ้ำกันในตะกร้าตัวเดิม (ให้ไปบวก quantity แทน)
+  @@map("cart_item")
+}
+
+// 4. ระบบคำสั่งซื้อและการชำระเงิน (Order & Order Items)
+model Order {
+  id          String      @id @default(uuid())
+  // order_no    String
+  userId      String      @map("user_id")
+  user        User        @relation(fields: [userId], references: [id])
+  shippingName String        @map("shipping_namae")
+  shippingPhone  String      @map("shipping_phone")
+  shippingAddressLine String @map("shipping_address_line")
+  shippingDistrinct  String  @map("shipping_distrinct")
+  shippingProvince String    @map("shipping_province") 
+  shippingPostalCode  String @map("shipping_postal_code") 
+  courierName  String       @map("courier_name")
+  trackingNumber String     @map("tracking_number")
+  shippedAt  DateTime       @map("shipped_at")
+  shippingFee  Decimal     @db.Decimal(10, 2)   @map("shipping_fee")
+  totalAmount Decimal     @db.Decimal(10, 2)    @map("total_amount")
+  cancelledReason  String   @map("cancelled_reason")
+  status      OrderStatus @default(PENDING)
+  items       OrderItem[]
+  statusLogs  OrderStatusLog[]
+  payments    Payment[]   
+  expiresAt  DateTime @map("expires_at")  
+  createdAt DateTime @default(now())  @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")
+
+  @@map("order")    
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String   @map("order_id")
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String   @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id])
+  productName  String @map("product_name")
+  quantity  Int
+  unitPrice     Decimal  @db.Decimal(10, 2) @map("unit_price")
+
+  @@map("order_item")
+}
+
+model OrderStatusLog {
+  id        String   @id @default(uuid())
+  orderId   String   @map("order_id")
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fromStatus  String  @map("from_status")
+  toStatus    String  @map("to_status")
+  changedBy   String  @map("changed_by") 
+  user     User    @relation(fields: [changedBy], references: [id])
+  createdAt DateTime @default(now())  @map("created_at")
+
+  @@map("order_status_log")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  DELIVERY_FAILED
+  RETURN
+}
+
+model Payment {
+  id        String   @id @default(uuid())
+  orderId   String   @map("order_id")
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status  PaymentStatus  
+  method    String  
+  amount   Decimal     @db.Decimal(10, 2)
+  transactionRef  String    @map("transaction_ref")
+  paidAt DateTime   @map("paid_at")
+  createdAt DateTime @default(now())  @map("created_at")
+
+
+  @@map("payment")
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  EXPIRED
+}
+
+model Inventory {
+  id        String   @id @default(uuid())
+  productId   String   @unique @map("product_id")
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity    Int
+  updatedAt DateTime  @map("updated_at")
+  inventoryTransaction  InventoryTransaction[]
+
+  @@map("inventory")
+}
+
+model InventoryTransaction {
+  id        String   @id @default(uuid())
+  userId    String    @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  inventoryId   String   @map("inventory_id")
+  inventory     Inventory    @relation(fields: [inventoryId], references: [id])
+  reasonId  String    @map("reason_id")
+  reason    InventoryTransactionReason  @relation(fields: [reasonId], references: [id])
+  type  String
+  inputUnitName   String    @map("input_unit_name")
+  note  String?
+  quantity  Int  
+  createdAt DateTime @default(now())  @map("created_at")
+  createdBy   String  @map("created_by")
+
+  @@map("inventory_transaction")
+}
+
+model InventoryTransactionReason {
+  id        String   @id @default(uuid())
+  code   String  
+  name    String  
+  transactionType   String  @map("transaction_type") 
+  isActive Boolean @default(true)     @map("is_active")
+  createdAt DateTime @default(now())  @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")  
+  transaction InventoryTransaction[]
+
+  @@map("inventory_transaction_reason")
+}
+

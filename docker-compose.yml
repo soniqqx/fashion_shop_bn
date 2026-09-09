@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ecommerce-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: rootpassword123
+      POSTGRES_DB: ecommerce_db
+    ports:
+      - "5433:5432" 
+    volumes:
+      - ecommerce_data:/var/lib/postgresql/data
+      # (ไม่บังคับ) หากต้องการรันสคริปต์ SQL ตอนสร้าง DB ครั้งแรกให้เปิดบรรทัดล่างนี้
+      # - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  ecommerce_data:
