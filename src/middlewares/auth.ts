@@ -10,7 +10,7 @@ const isAuthTokenPayload = (value: unknown) => {
     }
 
     const payload = value as Record<string, unknown>;
-    return typeof payload.sub === "string" && typeof payload.username === "string";
+    return typeof payload.sub === "string" && typeof payload.username === "string" && typeof payload.role === "string";
 };
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
@@ -29,8 +29,6 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
 
     try {
         const payload = jwt.verify(token, config.JWT_SECRET);
-        console.log(payload)
-        console.log(isAuthTokenPayload(payload))
         if (!isAuthTokenPayload(payload)) {
             next(new AppError(401, "Invalid token payload."));
             return;

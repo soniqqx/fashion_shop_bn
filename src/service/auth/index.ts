@@ -19,7 +19,7 @@ export const authService = {
         }
 
         const expiresIn: SignOptions["expiresIn"] = config.JWT_EXPIRES_IN as SignOptions["expiresIn"];
-        const token = jwt.sign({ sub: admin.id, username: admin.username }, config.JWT_SECRET, {
+        const token = jwt.sign({ sub: admin.id, username: admin.username, role: admin.role }, config.JWT_SECRET, {
             expiresIn,
         });
 
@@ -28,6 +28,7 @@ export const authService = {
             admin: {
                 id: admin.id,
                 username: admin.username,
+                role: admin.role
             },
         };
     },
