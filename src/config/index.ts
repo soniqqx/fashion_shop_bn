@@ -19,7 +19,7 @@ const config = {
     db_pool_idle: process.env.DB_POOL_IDLE ?? 10000,
     custom_header_key: process.env.CUSTOM_HEADER_KEY,
     JWT_SECRET: process.env.JWT_SECRET ?? "change-this-in-production",
-    JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? "1h",
+    JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? "1d",
 };
 
 

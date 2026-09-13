@@ -1,25 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { productService } from "../../../service/product";
 import { createProductBody, updateProductBody } from "../../../schemas/product";
+import { generateSKU } from "../../../utils/skuGenerator";
 import { AppError } from "../../../lib/errors";
 
-const productController = {
+const categoryController = {
     async findAll(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const result = await productService.findAll();
-            res.status(200).json(result);
-            return;
-        } catch (error) {
-            next(error);
-        }
-    },
-    async findById(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-            const id = req.params.id;
-            if (!id || typeof id !== "string") {
-                throw new AppError(400, "id must be a string.");
-            }
-            const result = await productService.findById(id);
             res.status(200).json(result);
             return;
         } catch (error) {
@@ -37,7 +25,10 @@ const productController = {
                 return;
             }
 
-            const result = await productService.create(parseResult.data);
+            const sku = generateSKU()
+            const product = { ...parseResult.data, sku }
+
+            const result = await productService.create(product);
             res.status(201).json(result);
             return;
         } catch (error) {
@@ -80,8 +71,5 @@ const productController = {
         } catch (error) {
             next(error);
         }
-    }
+    },
 }
-
-
-export default productController;

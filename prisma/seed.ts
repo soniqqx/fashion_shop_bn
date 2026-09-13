@@ -1,9 +1,10 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, Role } from "../src/generated/prisma/client";
+import {
+    PrismaClient,
+    Role,
+} from "../src/generated/prisma/client";
 import bcrypt from "bcrypt";
-import config from "../src/config/index"
-// import { prisma } from "../src/lib/prisma"
-
+import config from "../src/config/index";
 
 const adapter = new PrismaPg({
     connectionString: config.db_url!,
@@ -52,25 +53,51 @@ async function main() {
     // Categories
     // =========================
 
-    const electronics = await prisma.category.upsert({
+    const tshirt = await prisma.category.upsert({
         where: {
-            slug: "electronics",
+            slug: "t-shirt",
         },
         update: {},
         create: {
-            name: "Electronics",
-            slug: "electronics",
+            nameTh: "เสื้อยืด",
+            nameEn: "T-Shirt",
+            slug: "t-shirt",
         },
     });
 
-    const clothing = await prisma.category.upsert({
+    const shirt = await prisma.category.upsert({
         where: {
-            slug: "clothing",
+            slug: "shirt",
         },
         update: {},
         create: {
-            name: "Clothing",
-            slug: "clothing",
+            nameTh: "เสื้อเชิ้ต",
+            nameEn: "Shirt",
+            slug: "shirt",
+        },
+    });
+
+    const hoodie = await prisma.category.upsert({
+        where: {
+            slug: "hoodie",
+        },
+        update: {},
+        create: {
+            nameTh: "เสื้อฮู้ด",
+            nameEn: "Hoodie",
+            slug: "hoodie",
+        },
+    });
+
+    const pants = await prisma.category.upsert({
+        where: {
+            slug: "pants",
+        },
+        update: {},
+        create: {
+            nameTh: "กางเกง",
+            nameEn: "Pants",
+            slug: "pants",
         },
     });
 
@@ -80,7 +107,8 @@ async function main() {
         },
         update: {},
         create: {
-            name: "Accessories",
+            nameTh: "เครื่องประดับและอุปกรณ์เสริม",
+            nameEn: "Accessories",
             slug: "accessories",
         },
     });
@@ -89,136 +117,386 @@ async function main() {
     // Products
     // =========================
 
-    const products = await Promise.all([
-        prisma.product.upsert({
-            where: {
-                sku: "ELEC-001",
-            },
-            update: {},
-            create: {
-                name: "Wireless Headphones",
-                sku: "ELEC-001",
-                description: "หูฟังไร้สายสำหรับใช้งานทั่วไป",
-                price: 1290,
-                unit: "ชิ้น",
-                categoryId: electronics.id,
-            },
-        }),
+    const basicTshirt = await prisma.product.create({
+        data: {
+            name: "Basic Cotton T-Shirt",
+            description: "เสื้อยืด Cotton พื้นฐาน ใส่ได้ทุกวัน",
+            categoryId: tshirt.id,
 
-        prisma.product.upsert({
-            where: {
-                sku: "ELEC-002",
+            variants: {
+                create: [
+                    {
+                        sku: "TSHIRT-BASIC-BLK-S",
+                        price: 390,
+                        color: "Black",
+                        size: "S",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "TSHIRT-BASIC-BLK-M",
+                        price: 390,
+                        color: "Black",
+                        size: "M",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "TSHIRT-BASIC-BLK-L",
+                        price: 390,
+                        color: "Black",
+                        size: "L",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "TSHIRT-BASIC-WHT-S",
+                        price: 390,
+                        color: "White",
+                        size: "S",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "TSHIRT-BASIC-WHT-M",
+                        price: 390,
+                        color: "White",
+                        size: "M",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "TSHIRT-BASIC-WHT-L",
+                        price: 390,
+                        color: "White",
+                        size: "L",
+                        unit: "ตัว",
+                    },
+                ],
             },
-            update: {},
-            create: {
-                name: "Mechanical Keyboard",
-                sku: "ELEC-002",
-                description: "คีย์บอร์ด Mechanical สำหรับทำงานและเล่นเกม",
-                price: 2490,
-                unit: "ชิ้น",
-                categoryId: electronics.id,
-            },
-        }),
+        },
 
-        prisma.product.upsert({
-            where: {
-                sku: "ELEC-003",
-            },
-            update: {},
-            create: {
-                name: "Wireless Mouse",
-                sku: "ELEC-003",
-                description: "เมาส์ไร้สายสำหรับใช้งานทั่วไป",
-                price: 890,
-                unit: "ชิ้น",
-                categoryId: electronics.id,
-            },
-        }),
+        include: {
+            variants: true,
+        },
+    });
 
-        prisma.product.upsert({
-            where: {
-                sku: "CLOTH-001",
-            },
-            update: {},
-            create: {
-                name: "Basic T-Shirt",
-                sku: "CLOTH-001",
-                description: "เสื้อยืด Basic Cotton",
-                price: 390,
-                unit: "ตัว",
-                categoryId: clothing.id,
-            },
-        }),
+    const oversizeTshirt = await prisma.product.create({
+        data: {
+            name: "Oversize T-Shirt",
+            description: "เสื้อยืดทรง Oversize สำหรับใส่แบบสบาย ๆ",
+            categoryId: tshirt.id,
 
-        prisma.product.upsert({
-            where: {
-                sku: "CLOTH-002",
+            variants: {
+                create: [
+                    {
+                        sku: "TSHIRT-OVS-NVY-M",
+                        price: 490,
+                        color: "Navy",
+                        size: "M",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "TSHIRT-OVS-NVY-L",
+                        price: 490,
+                        color: "Navy",
+                        size: "L",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "TSHIRT-OVS-NVY-XL",
+                        price: 490,
+                        color: "Navy",
+                        size: "XL",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "TSHIRT-OVS-GRY-M",
+                        price: 490,
+                        color: "Gray",
+                        size: "M",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "TSHIRT-OVS-GRY-L",
+                        price: 490,
+                        color: "Gray",
+                        size: "L",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "TSHIRT-OVS-GRY-XL",
+                        price: 490,
+                        color: "Gray",
+                        size: "XL",
+                        unit: "ตัว",
+                    },
+                ],
             },
-            update: {},
-            create: {
-                name: "Hoodie",
-                sku: "CLOTH-002",
-                description: "เสื้อ Hoodie สำหรับใส่ในวันสบาย ๆ",
-                price: 890,
-                unit: "ตัว",
-                categoryId: clothing.id,
-            },
-        }),
+        },
 
-        prisma.product.upsert({
-            where: {
-                sku: "ACC-001",
+        include: {
+            variants: true,
+        },
+    });
+
+    const casualShirt = await prisma.product.create({
+        data: {
+            name: "Casual Oxford Shirt",
+            description: "เสื้อเชิ้ต Oxford สำหรับใส่ทำงานหรือใส่ลำลอง",
+            categoryId: shirt.id,
+
+            variants: {
+                create: [
+                    {
+                        sku: "SHIRT-OXF-BLU-M",
+                        price: 690,
+                        color: "Blue",
+                        size: "M",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "SHIRT-OXF-BLU-L",
+                        price: 690,
+                        color: "Blue",
+                        size: "L",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "SHIRT-OXF-BLU-XL",
+                        price: 690,
+                        color: "Blue",
+                        size: "XL",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "SHIRT-OXF-WHT-M",
+                        price: 690,
+                        color: "White",
+                        size: "M",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "SHIRT-OXF-WHT-L",
+                        price: 690,
+                        color: "White",
+                        size: "L",
+                        unit: "ตัว",
+                    },
+                ],
             },
-            update: {},
-            create: {
-                name: "Canvas Backpack",
-                sku: "ACC-001",
-                description: "กระเป๋า Canvas สำหรับใช้งานประจำวัน",
-                price: 790,
-                unit: "ใบ",
-                categoryId: accessories.id,
+        },
+
+        include: {
+            variants: true,
+        },
+    });
+
+    const hoodieProduct = await prisma.product.create({
+        data: {
+            name: "Basic Hoodie",
+            description: "เสื้อ Hoodie เนื้อผ้านุ่มสำหรับใส่ในวันสบาย ๆ",
+            categoryId: hoodie.id,
+
+            variants: {
+                create: [
+                    {
+                        sku: "HOODIE-BSC-BLK-M",
+                        price: 890,
+                        color: "Black",
+                        size: "M",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "HOODIE-BSC-BLK-L",
+                        price: 890,
+                        color: "Black",
+                        size: "L",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "HOODIE-BSC-GRY-M",
+                        price: 890,
+                        color: "Gray",
+                        size: "M",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "HOODIE-BSC-GRY-L",
+                        price: 890,
+                        color: "Gray",
+                        size: "L",
+                        unit: "ตัว",
+                    },
+                ],
             },
-        }),
-    ]);
+        },
+
+        include: {
+            variants: true,
+        },
+    });
+
+    const pantsProduct = await prisma.product.create({
+        data: {
+            name: "Straight Fit Pants",
+            description: "กางเกงทรง Straight Fit สำหรับใส่ในชีวิตประจำวัน",
+            categoryId: pants.id,
+
+            variants: {
+                create: [
+                    {
+                        sku: "PANTS-STR-BLK-M",
+                        price: 790,
+                        color: "Black",
+                        size: "M",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "PANTS-STR-BLK-L",
+                        price: 790,
+                        color: "Black",
+                        size: "L",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "PANTS-STR-BEI-M",
+                        price: 790,
+                        color: "Beige",
+                        size: "M",
+                        unit: "ตัว",
+                    },
+                    {
+                        sku: "PANTS-STR-BEI-L",
+                        price: 790,
+                        color: "Beige",
+                        size: "L",
+                        unit: "ตัว",
+                    },
+                ],
+            },
+        },
+
+        include: {
+            variants: true,
+        },
+    });
+
+    const capProduct = await prisma.product.create({
+        data: {
+            name: "Minimal Cotton Cap",
+            description: "หมวก Cotton ดีไซน์เรียบง่าย",
+            categoryId: accessories.id,
+
+            variants: {
+                create: [
+                    {
+                        sku: "CAP-MIN-BLK-OS",
+                        price: 290,
+                        color: "Black",
+                        size: "One Size",
+                        unit: "ใบ",
+                    },
+                    {
+                        sku: "CAP-MIN-BEI-OS",
+                        price: 290,
+                        color: "Beige",
+                        size: "One Size",
+                        unit: "ใบ",
+                    },
+                ],
+            },
+        },
+
+        include: {
+            variants: true,
+        },
+    });
+
+    const products = [
+        basicTshirt,
+        oversizeTshirt,
+        casualShirt,
+        hoodieProduct,
+        pantsProduct,
+        capProduct,
+    ];
 
     // =========================
     // Inventory
     // =========================
 
-    const inventoryData = [
-        { product: products[0], quantity: 20 },
-        { product: products[1], quantity: 10 },
-        { product: products[2], quantity: 30 },
-        { product: products[3], quantity: 50 },
-        { product: products[4], quantity: 15 },
-        { product: products[5], quantity: 25 },
-    ];
+    const inventoryQuantity: Record<string, number> = {
+        "TSHIRT-BASIC-BLK-S": 20,
+        "TSHIRT-BASIC-BLK-M": 30,
+        "TSHIRT-BASIC-BLK-L": 15,
+        "TSHIRT-BASIC-WHT-S": 18,
+        "TSHIRT-BASIC-WHT-M": 25,
+        "TSHIRT-BASIC-WHT-L": 12,
 
-    for (const item of inventoryData) {
-        await prisma.inventory.upsert({
-            where: {
-                productId: item.product.id,
-            },
-            update: {
-                quantity: item.quantity,
-            },
-            create: {
-                productId: item.product.id,
-                quantity: item.quantity,
-                updatedAt: new Date(),
-            },
-        });
+        "TSHIRT-OVS-NVY-M": 15,
+        "TSHIRT-OVS-NVY-L": 20,
+        "TSHIRT-OVS-NVY-XL": 10,
+        "TSHIRT-OVS-GRY-M": 18,
+        "TSHIRT-OVS-GRY-L": 22,
+        "TSHIRT-OVS-GRY-XL": 8,
+
+        "SHIRT-OXF-BLU-M": 12,
+        "SHIRT-OXF-BLU-L": 15,
+        "SHIRT-OXF-BLU-XL": 8,
+        "SHIRT-OXF-WHT-M": 10,
+        "SHIRT-OXF-WHT-L": 14,
+
+        "HOODIE-BSC-BLK-M": 10,
+        "HOODIE-BSC-BLK-L": 12,
+        "HOODIE-BSC-GRY-M": 8,
+        "HOODIE-BSC-GRY-L": 10,
+
+        "PANTS-STR-BLK-M": 15,
+        "PANTS-STR-BLK-L": 12,
+        "PANTS-STR-BEI-M": 10,
+        "PANTS-STR-BEI-L": 8,
+
+        "CAP-MIN-BLK-OS": 20,
+        "CAP-MIN-BEI-OS": 15,
+    };
+
+    let variantCount = 0;
+
+    for (const product of products) {
+        for (const variant of product.variants) {
+            await prisma.inventory.upsert({
+                where: {
+                    variantId: variant.id,
+                },
+                update: {
+                    quantity:
+                        inventoryQuantity[variant.sku] ?? 0,
+                    updatedAt: new Date(),
+                },
+                create: {
+                    variantId: variant.id,
+                    quantity:
+                        inventoryQuantity[variant.sku] ?? 0,
+                    updatedAt: new Date(),
+                },
+            });
+
+            variantCount++;
+        }
     }
+
+    // =========================
+    // Summary
+    // =========================
 
     console.log("✅ Seed completed!");
     console.log(`Admin: ${admin.email}`);
     console.log(`User: ${user.email}`);
+    console.log(`Categories: 5`);
     console.log(`Products: ${products.length}`);
+    console.log(`Variants: ${variantCount}`);
+    console.log(`Inventory: ${variantCount}`);
 }
 
 main()
     .catch((error) => {
-        console.error(error);
+        console.error("❌ Seed failed:", error);
         process.exit(1);
     })
     .finally(async () => {

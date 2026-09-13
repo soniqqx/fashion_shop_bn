@@ -9,6 +9,7 @@ import { Role } from '../../generated/prisma/enums';
 const router = express.Router();
 
 router.get("/find-all", productController.findAll)
+router.get("/find-by-id/:id", productController.findById)
 router.post("/create", authMiddleware, checkRole([Role.ADMIN]), validate(createProductBody), productController.create)
 router.put("/update/:id", authMiddleware, checkRole([Role.ADMIN]), validate(updateProductBody), productController.update)
 router.patch("/delete/:id", authMiddleware, checkRole([Role.ADMIN]), productController.delete)
