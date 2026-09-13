@@ -1,13 +1,26 @@
 import { Request, Response, NextFunction } from "express";
-import { productService } from "../../../service/product";
-import { createProductBody, updateProductBody } from "../../../schemas/product";
-import { generateSKU } from "../../../utils/skuGenerator";
 import { AppError } from "../../../lib/errors";
+import { categoryService } from "../../../service/category";
+import { createCategoryBody, updateCategoryBody } from "../../../schemas/category";
 
 const categoryController = {
     async findAll(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const result = await productService.findAll();
+            const result = await categoryService.findAll();
+            res.status(200).json(result);
+            return;
+        } catch (error) {
+            next(error);
+        }
+    },
+    async findById(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const id = req.params.id;
+            if (!id || typeof id !== "string") {
+                throw new AppError(400, "id must be a string.");
+            }
+
+            const result = await categoryService.findById(id);
             res.status(200).json(result);
             return;
         } catch (error) {
@@ -16,7 +29,7 @@ const categoryController = {
     },
     async create(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const parseResult = createProductBody.safeParse(req.body);
+            const parseResult = createCategoryBody.safeParse(req.body);
             if (!parseResult.success) {
                 res.status(400).json({
                     message: "Validation failed",
@@ -25,10 +38,7 @@ const categoryController = {
                 return;
             }
 
-            const sku = generateSKU()
-            const product = { ...parseResult.data, sku }
-
-            const result = await productService.create(product);
+            const result = await categoryService.create(parseResult.data);
             res.status(201).json(result);
             return;
         } catch (error) {
@@ -37,7 +47,7 @@ const categoryController = {
     },
     async update(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const parseResult = updateProductBody.safeParse(req.body);
+            const parseResult = updateCategoryBody.safeParse(req.body);
             if (!parseResult.success) {
                 res.status(400).json({
                     message: "Validation failed",
@@ -51,7 +61,7 @@ const categoryController = {
                 throw new AppError(400, "id must be a string.");
             }
 
-            const result = await productService.update(id, parseResult.data);
+            const result = await categoryService.update(id, parseResult.data);
             res.status(200).json(result);
             return;
         } catch (error) {
@@ -65,7 +75,7 @@ const categoryController = {
                 throw new AppError(400, "id must be a string.");
             }
 
-            const result = await productService.delete(id);
+            const result = await categoryService.delete(id);
             res.status(200).json(result);
             return;
         } catch (error) {
@@ -73,3 +83,5 @@ const categoryController = {
         }
     },
 }
+
+export default categoryController;
