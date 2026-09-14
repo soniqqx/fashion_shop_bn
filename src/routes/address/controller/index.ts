@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../../../lib/errors";
-import { categoryService } from "../../../service/category";
-import { createCategoryBody, updateCategoryBody } from "../../../schemas/category";
+import { addressService } from "../../../service/address";
+import { createAddressBody, updateAddressBody } from "../../../schemas/address";
 
-const categoryController = {
+const addressController = {
     async findAll(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const result = await categoryService.findAll();
+            const result = await addressService.findAll();
             res.status(200).json(result);
             return;
         } catch (error) {
@@ -20,7 +20,7 @@ const categoryController = {
                 throw new AppError(400, "id must be a string.");
             }
 
-            const result = await categoryService.findById(id);
+            const result = await addressService.findById(id);
             res.status(200).json(result);
             return;
         } catch (error) {
@@ -29,7 +29,7 @@ const categoryController = {
     },
     async create(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const parseResult = createCategoryBody.safeParse(req.body);
+            const parseResult = createAddressBody.safeParse(req.body);
             if (!parseResult.success) {
                 res.status(400).json({
                     message: "Validation failed",
@@ -38,7 +38,8 @@ const categoryController = {
                 return;
             }
 
-            const result = await categoryService.create(parseResult.data);
+            const id = res.locals.auth.sub
+            const result = await addressService.create(id, parseResult.data);
             res.status(201).json(result);
             return;
         } catch (error) {
@@ -47,7 +48,7 @@ const categoryController = {
     },
     async update(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const parseResult = updateCategoryBody.safeParse(req.body);
+            const parseResult = updateAddressBody.safeParse(req.body);
             if (!parseResult.success) {
                 res.status(400).json({
                     message: "Validation failed",
@@ -61,7 +62,7 @@ const categoryController = {
                 throw new AppError(400, "id must be a string.");
             }
 
-            const result = await categoryService.update(id, parseResult.data);
+            const result = await addressService.update(id, parseResult.data);
             res.status(200).json(result);
             return;
         } catch (error) {
@@ -75,7 +76,7 @@ const categoryController = {
                 throw new AppError(400, "id must be a string.");
             }
 
-            const result = await categoryService.delete(id);
+            const result = await addressService.delete(id);
             res.status(200).json(result);
             return;
         } catch (error) {
@@ -84,4 +85,4 @@ const categoryController = {
     },
 }
 
-export default categoryController;
+export default addressController;

@@ -41,7 +41,7 @@ model Address {
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   recipientName  String
   phone      String
-  addressLine      String
+  addressLine  String
   district   String
   province    String
   postalCode String
@@ -255,7 +255,7 @@ model InventoryTransactionReason {
   id        String   @id @default(uuid())
   code   String  
   name    String  
-  transactionType   String  @map("transaction_type") 
+  transactionType   TransactionType  @map("transaction_type") 
   isActive Boolean @default(true)     @map("is_active")
   createdAt DateTime @default(now())  @map("created_at")
   updatedAt DateTime @updatedAt       @map("updated_at")  
@@ -264,3 +264,7 @@ model InventoryTransactionReason {
   @@map("inventory_transaction_reason")
 }
 
+enum TransactionType {
+  IN
+  OUT
+}
