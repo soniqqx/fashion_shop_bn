@@ -6,7 +6,7 @@ dotenv.config();
 const config = {
     node_env: process.env.NODE_ENV || "development",
     port: process.env.PORT,
-    db_url: process.env.DATABASE_URL,
+    db_url: process.env.DATABASE_URL /* "postgresql://postgres:rootpassword123@localhost:5433/ecommerce_db_test" */,
     db_username: process.env.DB_USERNAME,
     db_password: process.env.DB_PASSWORD,
     db_name: process.env.DB_NAME,

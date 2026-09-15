@@ -1,7 +1,7 @@
 import { Product } from "../../generated/prisma/client";
 import { AppError } from "../../lib/errors";
 import { prisma } from "../../lib/prisma";
-import { CreateProductVariantsBody, ProductVariantBody } from "../../schemas/productVariant";
+import { CreateProductVariantsBody } from "../../schemas/productVariant";
 import { generateSKU } from "../../utils/skuGenerator";
 
 export const productVariantService = {
