@@ -6,6 +6,9 @@ import variant from './productVariant'
 import category from './category'
 import address from './address'
 import inventoryReason from './inventoryReason'
+import inventory from './inventory'
+import inventoryTransaction from './inventoryTransaction'
+
 
 
 const router = express.Router();
@@ -15,7 +18,11 @@ router.use("/api/product", product)
 router.use("/api/variant", variant)
 router.use("/api/category", category)
 router.use("/api/address", address)
-router.use("/api/inventory_reason", inventoryReason)
+router.use("/api/inventory-reason", inventoryReason)
+router.use("/api/inventory", inventory)
+router.use("/api/inventory-transaction", inventoryTransaction)
+
+
 
 
 
