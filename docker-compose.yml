@@ -1,20 +1,38 @@
-version: "3.9"
+# version: "3.9"
+
+# services:
+#   postgres:
+#     image: postgres:16-alpine
+#     container_name: ecommerce-postgres
+#     restart: unless-stopped
+#     environment:
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: rootpassword123
+#       POSTGRES_DB: ecommerce_db
+#     ports:
+#       - "5433:5432" 
+#     volumes:
+#       - ecommerce_data:/var/lib/postgresql/data
+#       # (ไม่บังคับ) หากต้องการรันสคริปต์ SQL ตอนสร้าง DB ครั้งแรกให้เปิดบรรทัดล่างนี้
+#       # - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+# volumes:
+#   ecommerce_data:
+version: '3.8'
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: ecommerce-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: rootpassword123
-      POSTGRES_DB: ecommerce_db
+  redis:
+    image: redis:alpine
+    container_name: redis-local
+    restart: always
     ports:
-      - "5433:5432" 
+      - "6379:6379"
     volumes:
-      - ecommerce_data:/var/lib/postgresql/data
-      # (ไม่บังคับ) หากต้องการรันสคริปต์ SQL ตอนสร้าง DB ครั้งแรกให้เปิดบรรทัดล่างนี้
-      # - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      # เก็บข้อมูลลงเครื่องจริง ข้อมูลไม่หายเมื่อ Restart
+      - redis_data:/data
+      # (Option) ถ้ามีไฟล์ redis.conf สามารถ Mount เข้าไปได้
+      # - ./redis.conf:/usr/local/etc/redis/redis.conf
+      - redis-server /usr/local/etc/redis/redis.conf
 
 volumes:
-  ecommerce_data:
+  redis_data:

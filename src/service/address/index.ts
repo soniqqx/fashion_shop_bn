@@ -1,4 +1,5 @@
-import { Address } from "../../generated/prisma/client"
+import { Address, Prisma } from "../../generated/prisma/client"
+import { AppError } from "../../lib/errors"
 import { prisma } from "../../lib/prisma"
 import { CreateAddressBody, UpdateAddressBody } from "../../schemas/address"
 
@@ -32,5 +33,28 @@ export const addressService = {
             where: { id },
             data: { isActive: false }
         })
+    },
+    async getCheckoutAddress(
+        tx: Prisma.TransactionClient,
+        userId: string,
+        addressId: string,
+    ) {
+
+        const address = await tx.address.findFirst({
+            where: {
+                id: addressId,
+                userId,
+                isActive: true,
+            },
+        });
+
+        if (!address) {
+            throw new AppError(
+                404,
+                "Address not found"
+            );
+        }
+
+        return address;
     }
 }
