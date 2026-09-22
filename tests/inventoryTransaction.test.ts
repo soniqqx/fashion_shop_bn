@@ -22,6 +22,8 @@ describe("Inventory Transaction API", () => {
 
         await prisma.inventoryTransaction.deleteMany();
         await prisma.inventory.deleteMany();
+        await prisma.cartItem.deleteMany();
+        await prisma.cart.deleteMany();
         await prisma.productVariant.deleteMany();
         await prisma.product.deleteMany();
         await prisma.category.deleteMany();

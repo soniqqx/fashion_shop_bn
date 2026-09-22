@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -10,7 +8,7 @@ services:
       POSTGRES_PASSWORD: rootpassword123
       POSTGRES_DB: ecommerce_db
     ports:
-      - "5433:5432" 
+      - "5433:5432"
     volumes:
       - ecommerce_data:/var/lib/postgresql/data
       # (ไม่บังคับ) หากต้องการรันสคริปต์ SQL ตอนสร้าง DB ครั้งแรกให้เปิดบรรทัดล่างนี้

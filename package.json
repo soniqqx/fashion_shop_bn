@@ -7,8 +7,8 @@
     "dev": "ts-node-dev --respawn --transpile-only src/bin/server.ts",
     "build": "tsc",
     "start": "node dist/app.ts",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest --fileParallelism=false",
+    "test:watch": "vitest --fileParallelism=false --watch",
     "test:migrate": "dotenv -e .env.test -- prisma migrate deploy",
     "seed": "tsx prisma/seed.ts"
   },

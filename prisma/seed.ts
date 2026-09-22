@@ -2,6 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import {
     PrismaClient,
     Role,
+    TransactionType,
 } from "../src/generated/prisma/client";
 import bcrypt from "bcrypt";
 import config from "../src/config/index";
@@ -13,6 +14,54 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({
     adapter,
 });
+
+const reasonsData = [
+    {
+        code: 'PURCHASE_RECEIVED',
+        name: 'รับสินค้าจาก Supplier',
+        transactionType: TransactionType.IN,
+    },
+    {
+        code: 'SALE',
+        name: 'ขายสินค้า',
+        transactionType: TransactionType.OUT,
+    },
+    {
+        code: 'CUSTOMER_RETURN',
+        name: 'ลูกค้าคืนสินค้า',
+        transactionType: TransactionType.IN,
+    },
+    {
+        code: 'DAMAGED',
+        name: 'สินค้าชำรุด',
+        transactionType: TransactionType.OUT,
+    },
+    {
+        code: 'LOST',
+        name: 'สินค้าสูญหาย',
+        transactionType: TransactionType.OUT,
+    },
+    {
+        code: 'ADJUSTMENT_IN',
+        name: 'ปรับยอด Stock',
+        transactionType: TransactionType.IN,
+    },
+    {
+        code: 'ADJUSTMENT_OUT',
+        name: 'ปรับยอด Stock',
+        transactionType: TransactionType.OUT,
+    },
+    {
+        code: 'RESERVE',
+        name: 'check out สินค้า',
+        transactionType: TransactionType.OUT,
+    },
+    {
+        code: 'EXPIRED_RESERVE',
+        name: 'หมดเวลาจ่ายเงิน',
+        transactionType: TransactionType.IN,
+    },
+];
 
 async function main() {
     console.log("🌱 Seeding database...");
@@ -479,6 +528,21 @@ async function main() {
 
             variantCount++;
         }
+    }
+
+    for (const reason of reasonsData) {
+        await prisma.inventoryTransactionReason.upsert({
+            where: { code: reason.code },
+            update: {
+                name: reason.name,
+                transactionType: reason.transactionType,
+            },
+            create: {
+                code: reason.code,
+                name: reason.name,
+                transactionType: reason.transactionType,
+            },
+        });
     }
 
     // =========================

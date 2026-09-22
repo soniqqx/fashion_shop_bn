@@ -1,7 +1,10 @@
-import { Inventory } from "../../generated/prisma/client"
+import { Inventory, InventoryTransactionReason, Prisma } from "../../generated/prisma/client"
 import { AppError } from "../../lib/errors"
 import { prisma } from "../../lib/prisma"
 import { CreateInventoryTransactionBody } from "../../schemas/inventoryTransaction"
+import { CheckoutCartItem } from "../cart"
+import { ReserveInventoryResult } from "../inventory"
+import { inventoryReasonService } from "../inventoryReason"
 
 export const inventoryTransactionService = {
     async findAll() {
@@ -125,6 +128,30 @@ export const inventoryTransactionService = {
                     note: data.note,
                 },
             });
+        });
+    },
+    async createReserveTransactions(
+        tx: Prisma.TransactionClient,
+        userId: string,
+        items: ReserveInventoryResult,
+        reason: InventoryTransactionReason,
+
+    ) {
+        const data = items.map((item) => {
+            return {
+                inventoryId: item.inventoryId,
+                userId,
+                reasonId: reason.id,
+                type: reason.transactionType,
+                inputUnitName: item.unitName,
+                quantity: item.quantity,
+                beforeQuantity: item.beforeQuantity,
+                afterQuantity: item.afterQuantity,
+            };
+        });
+
+        return tx.inventoryTransaction.createMany({
+            data,
         });
     }
 }

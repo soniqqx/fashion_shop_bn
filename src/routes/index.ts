@@ -8,6 +8,10 @@ import address from './address'
 import inventoryReason from './inventoryReason'
 import inventory from './inventory'
 import inventoryTransaction from './inventoryTransaction'
+import cartItem from './cartItem'
+import checkout from './checkout'
+
+
 
 
 
@@ -21,6 +25,9 @@ router.use("/api/address", address)
 router.use("/api/inventory-reason", inventoryReason)
 router.use("/api/inventory", inventory)
 router.use("/api/inventory-transaction", inventoryTransaction)
+router.use("/api/cart-item", cartItem)
+router.use("/api/", checkout)
+
 
 
 
