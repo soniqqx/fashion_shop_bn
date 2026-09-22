@@ -17,24 +17,38 @@
 
 สิ่งที่กำลังโฟกัสในช่วงนี้คือการวาง flow ฝั่ง Backend ให้ชัดเจนและทดสอบได้ ก่อนนำ API ไปเชื่อมกับหน้าบ้านของลูกค้าและผู้ดูแลระบบ
 
-## ลองใช้งานด้วยตัวเอง
+## Try it
 
 ### สิ่งที่ต้องมี
 
 - Node.js 20 ขึ้นไป
-- PostgreSQL ที่เข้าถึงได้
-- `DATABASE_URL` และ `JWT_SECRET` ในไฟล์ `.env`
+- Docker Desktop และ Docker Compose (สำหรับรัน PostgreSQL ในเครื่อง)
 
-ตัวอย่าง `.env` (ปรับ connection string ให้ตรงกับเครื่องของตนเอง):
+### 1. สร้างไฟล์ environment
 
-```env
-PORT=3000
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/ecommerce_db"
-JWT_SECRET="replace-with-a-long-random-secret"
-JWT_EXPIRES_IN="1d"
+คัดลอกไฟล์ตัวอย่างเป็น `.env` แล้วเปลี่ยนค่า `JWT_SECRET` เป็นค่าลับของตนเอง:
+
+```powershell
+Copy-Item .env.example .env
 ```
 
-### เริ่มต้นระบบ
+ไฟล์ `.env.example` ใช้ค่า PostgreSQL ที่ตรงกับ `docker-compose.yml` แล้ว จึงไม่จำเป็นต้องแก้ `DATABASE_URL` หากใช้ database ผ่าน Docker ตามขั้นตอนถัดไป
+
+### 2. เริ่ม PostgreSQL ด้วย Docker
+
+```bash
+docker compose up -d
+```
+
+ตรวจสอบว่า container พร้อมรับการเชื่อมต่อ:
+
+```bash
+docker compose ps
+```
+
+> ต้องรันคำสั่งนี้ในครั้งแรกและทุกครั้งที่ container ถูกหยุดไว้ แต่ไม่ต้องรันซ้ำเมื่อ container ยังทำงานอยู่ ข้อมูล database จะถูกเก็บไว้ใน Docker volume `ecommerce_data`
+
+### 3. ติดตั้ง, สร้างตาราง และเริ่ม API
 
 ```bash
 npm install
@@ -250,6 +264,6 @@ npm test
 - [ ] Customer storefront และ Admin dashboard
 - [ ] Deploy และ CI/CD
 
-## ข้อจำกัดที่ตั้งใจเปิดเผย
+## ข้อจำกัด
 
 นี่เป็นโปรเจกต์เพื่อการเรียนรู้และยังไม่พร้อมใช้งานจริง: secret ต้องกำหนดเองใน environment, payment ยังไม่เชื่อมต่อ, reservation TTL ยังไม่ได้เรียกใช้จาก checkout และยังไม่มี frontend หรือ production deployment
