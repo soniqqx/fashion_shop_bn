@@ -10,6 +10,7 @@ import { orderItemService } from "../orderItem";
 import { orderStatusLogService } from "../orderstatusLog";
 import { pricingService } from "../pricing";
 import { TransactionType } from "../../generated/prisma/enums";
+import { paymentService } from "../payment";
 
 export const checkout = async (userId: string, items: CreateItemCheckoutBody) => {
     const order = await prisma.$transaction(async (tx) => {
@@ -71,11 +72,27 @@ export const checkout = async (userId: string, items: CreateItemCheckoutBody) =>
             items
         );
 
-        return order;
+        const payment = await paymentService.create(
+            tx,
+            order.id,
+            order.totalAmount
+        )
+
+        return {
+            order,
+            payment
+        };
     });
+
+
     // await reservationService.create(
     //     order.id
     // );
 
-    return order;
+    return {
+        order: order.order,
+        payment: order.payment
+        // paymentId: order.payment.id,
+        // expiresAt: order.order.expiresAt
+    };
 };

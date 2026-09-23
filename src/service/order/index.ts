@@ -8,6 +8,8 @@ export const orderService = {
         return prisma.order.findMany()
     },
     async create(tx: Prisma.TransactionClient, userId: string, address: Address, shippingMethod: ShippingMethod, price: CalculateOrderAmountResult) {
+        const EXPIRE_MINUTES = 15;
+        const expiresAt = new Date(Date.now() + EXPIRE_MINUTES * 60 * 1000);
         return tx.order.create(
             {
                 data: {
@@ -21,9 +23,10 @@ export const orderService = {
                     shippingFee: price.shippingFee,
                     shippingMethod,
                     subtotalAmount: price.subtotal,
-                    totalAmount: price.totalAmount
+                    totalAmount: price.totalAmount,
+                    expiresAt: expiresAt
                 }
             }
         )
-    }
+    },
 }

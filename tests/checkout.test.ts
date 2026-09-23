@@ -1,10 +1,13 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "../src/lib/prisma";
 import { checkout } from "../src/service/checkout";
-import { ShippingMethod, TransactionType } from "../src/generated/prisma/enums";
+import { PaymentStatus, Role, ShippingMethod, TransactionType } from "../src/generated/prisma/enums";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 describe("checkout service", () => {
     let userId: string;
+    let userToken: string;
     let addressId: string;
     let cartItemId: string;
     let inventoryId: string;
@@ -27,13 +30,30 @@ describe("checkout service", () => {
         await prisma.user.deleteMany();
 
         const unique = Date.now().toString();
+
+        const password = await bcrypt.hash("123456", 10);
         const user = await prisma.user.create({
             data: {
-                email: `checkout-${unique}@example.com`,
-                username: `checkout-${unique}`,
-                password: "hashed-password",
+                email: `test-${Date.now()}@example.com`,
+                username: `test-${Date.now()}`,
+                password: password,
+                role: Role.USER,
+                isActive: true,
             },
         });
+
+        userId = user.id;
+        const config = { JWT_SECRET: process.env.JWT_SECRET || "change-this-in-production" };
+
+        userToken = jwt.sign(
+            {
+                sub: user.id,
+                username: user.username,
+                role: user.role,
+            },
+            config.JWT_SECRET,
+            { expiresIn: "1h" }
+        );
         userId = user.id;
 
         const address = await prisma.address.create({
@@ -92,18 +112,21 @@ describe("checkout service", () => {
             shippingMethod: ShippingMethod.STANDARD,
         });
 
-        expect(order.userId).toBe(userId);
-        expect(Number(order.subtotalAmount)).toBe(400);
-        expect(Number(order.shippingFee)).toBe(40);
-        expect(Number(order.totalAmount)).toBe(440);
+        expect(order.order.userId).toBe(userId);
+        expect(Number(order.order.subtotalAmount)).toBe(400);
+        expect(Number(order.order.shippingFee)).toBe(40);
+        expect(Number(order.order.totalAmount)).toBe(440);
+        expect(order.payment.orderId).toBe(order.order.id);
+        expect(order.payment.status).toBe(PaymentStatus.PENDING);
+        expect(Number(order.payment.amount)).toBe(440.00);
 
         await expect(prisma.cartItem.findUnique({ where: { id: cartItemId } }))
             .resolves.toBeNull();
         await expect(prisma.inventory.findUnique({ where: { id: inventoryId } }))
             .resolves.toMatchObject({ quantity: 8 });
-        await expect(prisma.orderItem.findMany({ where: { orderId: order.id } }))
+        await expect(prisma.orderItem.findMany({ where: { orderId: order.order.id } }))
             .resolves.toMatchObject([{ variantId: expect.any(String), quantity: 2, productName: "Checkout Shirt" }]);
-        await expect(prisma.orderStatusLog.findMany({ where: { orderId: order.id } }))
+        await expect(prisma.orderStatusLog.findMany({ where: { orderId: order.order.id } }))
             .resolves.toMatchObject([{ toStatus: "PENDING", changedBy: userId }]);
         await expect(prisma.inventoryTransaction.findMany({ where: { reasonId: reserveReasonId } }))
             .resolves.toMatchObject([{
