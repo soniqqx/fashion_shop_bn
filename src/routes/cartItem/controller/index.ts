@@ -41,8 +41,7 @@ const cartItemController = {
             }
 
             const userId = res.locals.auth.sub
-            console.log("CREATE CART ITEM CONTROLLER");
-            console.log("status = 201");
+
             const result = await cartItemService.create(userId, parseResult.data);
             res.status(200).json(result);
             return;
