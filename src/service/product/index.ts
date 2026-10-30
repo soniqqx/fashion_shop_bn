@@ -6,7 +6,32 @@ import { generateSKU } from "../../utils/skuGenerator";
 
 export const productService = {
     async findAll() {
-        return prisma.product.findMany();
+        return prisma.product.findMany({
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                categoryId: true,
+                isActive: true,
+                createdAt: true,
+                updatedAt: true,
+                variants: {
+                    where: { isActive: true },
+                    select: {
+                        id: true,
+                        sku: true,
+                        price: true,
+                        imageUrl: true,
+                        color: true,
+                        size: true,
+                        unit: true,
+                        isActive: true,
+                        createdAt: true,
+                        updatedAt: true,
+                    }
+                }
+            }
+        });
     },
     async findById(id: string) {
         return prisma.product.findUnique({
