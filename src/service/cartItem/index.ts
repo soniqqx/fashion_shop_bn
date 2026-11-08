@@ -10,10 +10,16 @@ export const cartItemService = {
         return prisma.cartItem.findMany({
             where: {
                 cartId,
+                variant: { isActive: true }
             },
             include: {
                 variant: {
                     include: {
+                        inventory: {
+                            select: {
+                                quantity: true
+                            }
+                        },
                         product: {
                             select: {
                                 name: true,
@@ -52,22 +58,61 @@ export const cartItemService = {
 
         const cartId = await getOrCreateActiveCartId(userId);
 
-        return prisma.cartItem.upsert({
-            where: {
-                cartId_variantId: {
+        return prisma.$transaction(async (tx) => {
+            const variant = await tx.productVariant.findUnique({
+                where: { id: data.variantId },
+                include: {
+                    product: true,
+                    inventory: true,
+                },
+            });
+
+            if (!variant || !variant.product) {
+                throw new AppError(404, "Product or variant not found");
+            }
+
+            if (!variant.product.isActive) {
+                throw new AppError(
+                    400,
+                    `Product "${variant.product.name}" is no longer available`
+                );
+            }
+
+            if (!variant.isActive) {
+                throw new AppError(
+                    400,
+                    `Variant "${variant.id}" is no longer available`
+                );
+            }
+
+            if (!variant.inventory) {
+                throw new AppError(404, "Inventory not found");
+            }
+
+            const cartItem = await tx.cartItem.upsert({
+                where: {
+                    cartId_variantId: {
+                        cartId,
+                        variantId: data.variantId,
+                    },
+                },
+                update: {
+                    quantity: { increment: data.quantity },
+                },
+                create: {
                     cartId,
                     variantId: data.variantId,
+                    quantity: data.quantity,
                 },
-            },
-            update: {
-                quantity: { increment: data.quantity },
-            },
-            create: {
-                cartId,
-                variantId: data.variantId,
-                quantity: data.quantity,
-            },
+            });
+
+            if (cartItem.quantity > variant.inventory.quantity) {
+                throw new AppError(400, "Insufficient stock");
+            }
+
+            return cartItem;
         });
+
     },
 
     async update(userId: string, itemId: string, data: UpdateCartItemBody) {
