@@ -1,12 +1,15 @@
 import { Product } from "../../generated/prisma/client";
 import { AppError } from "../../lib/errors";
 import { prisma } from "../../lib/prisma";
-import { CreateProductBody, UpdateProductBody } from "../../schemas/product";
+import { AdminFindAllProductQuery, CreateProductBody, UpdateProductBody } from "../../schemas/product";
 import { generateSKU } from "../../utils/skuGenerator";
 
 export const productService = {
     async findAll() {
         return prisma.product.findMany({
+            where: {
+                isActive: true,
+            },
             select: {
                 id: true,
                 name: true,
@@ -31,6 +34,34 @@ export const productService = {
                     }
                 }
             }
+        });
+    },
+    async findAllAdmin(query?: AdminFindAllProductQuery) {
+        return prisma.product.findMany({
+            where: {
+                ...(query?.isActive !== undefined && { isActive: query.isActive }),
+                ...(query?.categoryId !== undefined && { categoryId: query.categoryId }),
+                ...(query?.search !== undefined && {
+                    name: {
+                        contains: query.search,
+                        mode: "insensitive",
+                    },
+                }),
+            },
+            include: {
+                category: true,
+                variants: {
+                    // include: {
+                    //     inventory: true,
+                    // },
+                    orderBy: {
+                        createdAt: "asc",
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
         });
     },
     async findById(id: string) {

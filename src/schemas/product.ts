@@ -1,6 +1,25 @@
 import { z } from 'zod';
 import { productVariantBody } from './productVariant';
 
+export const adminFindAllProductQuery = z.object({
+    isActive: z
+        .enum(["true", "false"], {
+            message: "isActive must be 'true' or 'false'",
+        })
+        .transform((val) => val === "true")
+        .optional(),
+    categoryId: z
+        .uuid({ message: "Invalid categoryId format" })
+        .optional(),
+    search: z
+        .string()
+        .trim()
+        .min(1, { message: "Search query must not be empty" })
+        .optional(),
+});
+
+export type AdminFindAllProductQuery = z.infer<typeof adminFindAllProductQuery>;
+
 export const createProductBody = z.object({
     name: z.string().min(2, { message: "Product must be at least 2 characters" }).regex(/^[a-zA-Zก-๙0-9\s\-_(.+)]+$/),
     description: z.string().optional().nullable(),

@@ -16,3 +16,18 @@ export const validate = (schema: ZodSchema) => {
         next();
     };
 };
+
+export const validateQuery = (schema: ZodSchema) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
+        const result = await schema.safeParseAsync(req.query);
+        if (!result.success) {
+            res.status(400).json({
+                message: "Invalid query parameters",
+                errors: result.error.flatten().fieldErrors,
+            });
+            return;
+        }
+        res.locals.query = result.data;
+        next();
+    };
+};

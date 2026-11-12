@@ -4,8 +4,13 @@ import { prisma } from "../../lib/prisma"
 import { CreateAddressBody, UpdateAddressBody } from "../../schemas/address"
 
 export const addressService = {
-    async findAll() {
-        return prisma.address.findMany()
+    async findAll(userId: string) {
+        return prisma.address.findMany({
+            where: {
+                userId,
+                isActive: true
+            }
+        })
     },
     async findById(id: string) {
         return prisma.address.findFirst({
