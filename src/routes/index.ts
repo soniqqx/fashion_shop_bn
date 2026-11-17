@@ -11,6 +11,7 @@ import inventoryTransaction from './inventoryTransaction'
 import cartItem from './cartItem'
 import checkout from './checkout'
 import payment from './payment'
+import order from './order'
 
 
 
@@ -30,6 +31,7 @@ router.use("/api/inventory-transaction", inventoryTransaction)
 router.use("/api/cart-item", cartItem)
 router.use("/api/", checkout)
 router.use("/api/payment", payment)
+router.use("/api/order", order)
 
 
 

@@ -4,8 +4,41 @@ import { CalculateOrderAmountResult } from "../pricing"
 
 
 export const orderService = {
-    async findAll() {
-        return prisma.order.findMany()
+    async findAll(userId: string) {
+        return prisma.order.findMany({
+            where: { userId },
+            select: {
+                id: true,
+                totalAmount: true,
+                status: true,
+                items: {
+                    select: {
+                        id: true,
+                        variantId: true,
+                        variant: {
+                            select: {
+                                sku: true,
+                                imageUrl: true,
+                                color: true,
+                                size: true
+                            }
+                        },
+                        productName: true,
+                        quantity: true,
+                        unitPrice: true
+                    }
+                }
+            }
+        })
+    },
+    async findById(orderId: string, userId: string) {
+        return prisma.order.findFirst({
+            where: { id: orderId, userId },
+            include: {
+                items: true,
+                statusLogs: true
+            }
+        })
     },
     async create(tx: Prisma.TransactionClient, userId: string, address: Address, shippingMethod: ShippingMethod, price: CalculateOrderAmountResult) {
         const EXPIRE_MINUTES = 15;
