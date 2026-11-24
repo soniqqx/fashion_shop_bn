@@ -13,6 +13,7 @@ export const createItemCheckoutBody = z.object({
         { message: "Invalid shipping method" },
     ),
 
+    paymentMethod: z.string().regex(/^[ก-๙a-zA-Z]+$/)
 });
 
 

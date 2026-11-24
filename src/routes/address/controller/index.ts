@@ -6,7 +6,8 @@ import { createAddressBody, updateAddressBody } from "../../../schemas/address";
 const addressController = {
     async findAll(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const result = await addressService.findAll();
+            const userId = res.locals.auth.sub
+            const result = await addressService.findAll(userId);
             res.status(200).json(result);
             return;
         } catch (error) {

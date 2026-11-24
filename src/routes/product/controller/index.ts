@@ -1,12 +1,30 @@
 import { Request, Response, NextFunction } from "express";
 import { productService } from "../../../service/product";
-import { createProductBody, updateProductBody } from "../../../schemas/product";
+import { adminFindAllProductQuery, createProductBody, updateProductBody } from "../../../schemas/product";
 import { AppError } from "../../../lib/errors";
 
 const productController = {
     async findAll(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const result = await productService.findAll();
+            res.status(200).json(result);
+            return;
+        } catch (error) {
+            next(error);
+        }
+    },
+    async findAllAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const parseResult = adminFindAllProductQuery.safeParse(req.query);
+            if (!parseResult.success) {
+                res.status(400).json({
+                    message: "Validation failed",
+                    errors: parseResult.error.format(),
+                });
+                return;
+            }
+
+            const result = await productService.findAllAdmin(parseResult.data);
             res.status(200).json(result);
             return;
         } catch (error) {
