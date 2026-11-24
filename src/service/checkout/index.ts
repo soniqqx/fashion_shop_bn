@@ -30,7 +30,7 @@ export const checkout = async (userId: string, items: CreateItemCheckoutBody) =>
             cart.cartItems
         );
 
-
+        //Idempotency or redis set ttl ควรมีอยู่
         const order = await orderService.create(
             tx,
             userId,
@@ -75,7 +75,8 @@ export const checkout = async (userId: string, items: CreateItemCheckoutBody) =>
         const payment = await paymentService.create(
             tx,
             order.id,
-            order.totalAmount
+            order.totalAmount,
+            items.paymentMethod //not null
         )
 
         return {

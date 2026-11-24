@@ -5,20 +5,25 @@ import { AppError } from "../../lib/errors"
 
 
 export const paymentService = {
-    async create(tx: Prisma.TransactionClient, orderId: string, totalAmount: Decimal) {
+    async create(tx: Prisma.TransactionClient, orderId: string, totalAmount: Decimal, method: string) {
+        if (!method) {
+            throw new AppError(404, 'Payment Method is null')
+        }
+
         return tx.payment.create(
             {
                 data: {
                     orderId,
                     status: PaymentStatus.PENDING,
-                    method: '',
+                    method,
                     amount: totalAmount,
                 },
             }
         )
     },
     async update(orderId: string, paymentId: string) {
-
+        //receive body status of payment paid or failed
+        //Transaction/Idempotency ควรมีอยู่เพื่อป้องกันกดจ่ายซ้ำๆ
         return prisma.$transaction(async (tx) => {
             const payment = await tx.payment.findUnique({
                 where: {
